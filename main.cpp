@@ -9,14 +9,18 @@
 using namespace std;
 class graph{
 public:
-	graph(int n = 0 ){
+	graph(int n = 0){
 		size = n;
-		cout<<"Class Constructed"<<endl;
-		for(int i = 0; i < size;++i )
-				matrix[i] = NULL;
+		matrix = new bool*[size];
+		for(int i = 0; i < size;  i++ )
+			matrix[i] = new bool[size];
+		cout<<"Class Constructed , empty matrix, size :"<<size<<endl;
 	};
 
 	~graph(){
+		for(int i = 0; i < size;  i++ )
+			 delete [] matrix[i];
+		delete [] matrix;
 		cout<<"Class Destructed"<<endl;
 	}
 
@@ -25,7 +29,8 @@ private:
 	int size;
 };
 int main() {
-	graph g;
+	graph g(4);
+	return 0;
 }
 
 
