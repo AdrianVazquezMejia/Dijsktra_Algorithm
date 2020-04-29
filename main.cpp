@@ -8,6 +8,7 @@
 #include <iostream>
 #include <time.h>
 #include <limits.h>
+#include <string.h>
 using namespace std;
 double  prob(void){
 	double result = rand();
@@ -29,19 +30,26 @@ typedef struct {
 	bool directed;
 }AdjancencyList;
 
-void insert_edge(AdjancencyList *g ,int x, int y, bool directed){
+void insert_edge(AdjancencyList *g ,int x, int y, int weight,bool directed){
 	edgenode *p;
 	p = new edgenode;
-	p ->weight = 2;
+	p ->weight = weight;
 	p ->y =y;
 	p ->next = g->edges[x];
 	g->edges[x] = p;
 	g->degree[x] ++;
 	if (directed==false){
-		insert_edge(g,y,x,true);
+		insert_edge(g,y,x,weight,true);
 	}
 	else g->nedges++;
 	//cout<<"Edge inserted<< " <<x<<"<->"<<y<<" peso :"<< p ->weight<<endl;
+}
+
+int genCost(int initialCost,int  Range){
+	double aux = rand();
+	aux= aux/RAND_MAX *(Range -initialCost);
+	int result = initialCost+static_cast<int>(aux);
+	return result;
 }
 class graph{
 public:
@@ -78,18 +86,20 @@ public:
 	~graph(){
 		cout<<"Class Destructed"<<endl;
 	}
-
+	int *distance;
 private:
 	AdjancencyList *List;
-	int *distance;
+
 };
 
 void graph::MonteCarlo(double density, int initialCost, int Range){
+	int weight=0;
 	for(int i=0; i< graph::List->nvertices;++i)
 		for(int j = i+1;j<graph::List->nvertices;++j)
-			if ((prob()<density))
-				insert_edge(List, i, j, false);
-
+			if ((prob()<density)){
+				weight = genCost(initialCost, Range);
+				insert_edge(List, i, j,weight ,false);
+			}
 }
 
 
@@ -125,7 +135,6 @@ int *graph::dijkstra(int start){
 	p = graph::List->edges[v];
 	while(!intree[v]){
 		intree[v] = true;
-		cout<<v<<endl;
 		p = graph::List->edges[v];
 			while(p!=NULL){
 				w = p->y;
@@ -147,31 +156,29 @@ int *graph::dijkstra(int start){
 
 	}
 
-	graph::distance = distance;
-	for (int i = 0; i <4;i++){
+	//memcpy(graph::distance[0] , distance[0],4);
+	for (int i = 0; i <graph::List->nvertices;i++){
 	if (distance[i] != INT_MAX)
-	cout<<distance[i]<<" ";
-	else cout<<-1<<" ";
-
+		graph::distance[i] = distance[i];
+	else graph::distance[i] = -1;
 	}
-	cout<<endl;
+
 	delete [] distance;
 
-return graph::distance = distance;;
+return graph::distance;
 }
 int main() {
 	srand(time(0));
-	graph g(4,false);
-	//g.init(1, false);
-	g.MonteCarlo(1,2,3);
+	graph g(50,false);
+	g.MonteCarlo(0.05,2,8);
 	int *a;
-	a = new int[10];
-	//bool f = true;
-
+	a = new int[50];
 	g.print_graph();
 	a=g.dijkstra(0);
-
-
+	for (int i = 0; i <50;i++){
+	cout<<a[i]<<" ";
+	}
+	cout<<endl;
 	delete[] a;
 	return 0;
 }
