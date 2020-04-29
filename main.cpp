@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <time.h>
+#include <limits.h>
 using namespace std;
 double  prob(void){
 	double result = rand();
@@ -36,7 +37,7 @@ public:
 		cout<<"Class Destructed"<<endl;
 	}
 
-private:
+
 	bool **matrix;
 	int size;
 };
@@ -58,7 +59,47 @@ void graph::printt( void ){
 	}
 	cout<<endl;
 }
+void dijkstra(graph g, int start, int distance[]){
+	int i;
+	bool intree[g.size];
+	//int distance[g.size];
+	int v;
+	int w;
+	int weight;
+	int dist;
+	int parent[g.size];
 
+	for (i=1; i <= g.size;i++){
+		intree[i] = false;
+		distance[i] = INT_MAX;
+		parent[i] = -1;
+	}
+	distance[start] =0;
+	v = start;
+	while(!intree[v]){
+		intree[v] = true;
+		for(i =1;i <=g.size;i++){
+			weight = g.matrix[v][i];
+			while(weight!=0){
+				w = i;
+				if (distance[w] > (distance[v]+ weight)){
+					distance[w] = distance[v]+ weight;
+					parent[w] = v;
+				}
+			}
+		}
+		v =1;
+		dist = INT_MAX;
+		for(i =1; i <=g.size; i++){
+			if ((intree[i]==false)&&(dist>distance[i])){
+				dist = distance[i];
+				v = i;
+			}
+
+		}
+	}
+
+}
 int main() {
 	srand(time(0));
 	graph g(3);
