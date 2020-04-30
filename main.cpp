@@ -31,6 +31,7 @@ typedef struct {
 	int nedges;
 	bool directed;
 }AdjancencyList;
+
 typedef struct {
 	int key;
 	int value;
@@ -60,6 +61,7 @@ int genCost(int initialCost,int  Range){
 	int result = initialCost+static_cast<int>(aux);
 	return result;
 }
+
 class p_queue{
 public:
 	p_queue(){
@@ -99,10 +101,16 @@ public:
 		for (i=0; i<n; i++)
 			List->edges[i] = NULL;
 		distance = new int[n];
+		prev = new int[n];
+		path = new int[n];
+		pathSize = 0;
 		cout<<"Class Constructed , empty matrix, size :"<<n<<endl;
+		jump = 0;
 	};
 	void init(int n = 0, bool directed = false);
 	void print_graph(void);
+	void find_path(int start, int end);
+	void putIn(int p);
 	//	cout<<"se puede"<<endl;
 	//};
 	void MonteCarlo(double density, int initialCost, int Range);
@@ -113,15 +121,21 @@ public:
 		delete [] List->edges;
 		delete List;
 		delete [] distance;
+		delete [] prev ;
+		delete [] path;
 	}
 
 	~graph(){
 		cout<<"Class Destructed"<<endl;
 	}
-	int *distance;
+	int *prev;
 private:
 	AdjancencyList *List;
+	int *distance;
 
+	int *path;
+	int pathSize;
+	int jump;
 };
 
 void graph::MonteCarlo(double density, int initialCost, int Range){
@@ -157,6 +171,7 @@ int *graph::dijkstra(int start){
 	distance= new int[List->nvertices];
 	for (i=0; i <List->nvertices;i++){
 		distance[i] = INT_MAX;
+		prev[i] = -1;
 	}
 	distance[start] =0;
 	v = start;
@@ -171,16 +186,32 @@ int *graph::dijkstra(int start){
 				if (distance[w] > (distance[v]+ weight)){
 					distance[w] = distance[v]+ weight;
 					Q.insert(w,distance[w]);
+					prev[w] =v;
 				}
 				p = p ->next;
 			}
 	}
+	for(i = 0; i < List->nvertices;i ++)
+		if(distance[i] ==INT_MAX)
+			distance[i] =-1;
 return distance;
 }
 
+void graph::find_path(int start, int end){
+	if ((start == end)||(end == -1)){
+		putIn(start);
+		cout<<endl;
+	}
+	else{
+		find_path(start,prev[end]);
+		putIn(end);
+	}
+}
 
-
-
+void graph::putIn(int p){
+	jump++;
+	path[jump] = p;
+}
 int  p_queue::parent(int n){
 	if (n==1)
 		return -1;
@@ -265,16 +296,23 @@ int p_queue::size(void){
 	return q->n;
 }
 //xxx add generics to Queue
+
+
 int main() {
 	srand(time(0));
-	graph g(50,false);
-	g.MonteCarlo(0.2,2,1);
+	int n = 10;
+	graph g(n,false);
+	g.MonteCarlo(0.5,2,1);
 	int *a;
-	a = new int[50];
+	a = new int[n];
 	g.print_graph();
 	a=g.dijkstra(0);
-	for (int i = 0; i <50;i++){
+	for (int i = 0; i <n;i++){
 	cout<<a[i]<<" ";
+	}
+	cout<<endl;
+	for (int i = 0; i <n;i++){
+	cout<<g.prev[i]<<" ";
 	}
 	cout<<endl;
 	delete[] a;
