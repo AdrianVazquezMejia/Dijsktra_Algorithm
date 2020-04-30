@@ -178,7 +178,6 @@ public:
 	p_queue(){
 		q = new queue;
 	}
-
 	void insert(int x);
 	void make(int  s[] , int n);
 	void q_print(void);
@@ -285,21 +284,11 @@ int main() {
 	a = new int[50];
 	g.print_graph();
 	a=g.dijkstra(0);
-	//for (int i = 0; i <50;i++){
-	//cout<<a[i]<<" ";
-	//}
-	cout<<endl;
-	cout <<endl;
-	p_queue Q;
-	Q.make(a+1,49);
-	cout<<"MIn is:"<<Q.extract_min()<<endl;
-	Q.q_print();
-	Q.heapsort(a,10);
-	for (int i = 0; i <10;i++){
+	for (int i = 0; i <50;i++){
 	cout<<a[i]<<" ";
 	}
 	cout<<endl;
-	cout<<endl;
+	p_queue Q;
 	delete[] a;
 	return 0;
 }
