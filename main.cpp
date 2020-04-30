@@ -10,6 +10,8 @@
 #include <limits.h>
 #include <string.h>
 using namespace std;
+
+const int PQ_SIZE = 500;
 double  prob(void){
 	double result = rand();
 	result= result/RAND_MAX;
@@ -155,8 +157,6 @@ int *graph::dijkstra(int start){
 			}
 
 	}
-
-	//memcpy(graph::distance[0] , distance[0],4);
 	for (int i = 0; i <graph::List->nvertices;i++){
 	if (distance[i] != INT_MAX)
 		graph::distance[i] = distance[i];
@@ -167,17 +167,138 @@ int *graph::dijkstra(int start){
 
 return graph::distance;
 }
+typedef struct{
+	int q[PQ_SIZE];
+	int n;
+}queue;
+
+
+class p_queue{
+public:
+	p_queue(){
+		q = new queue;
+	}
+
+	void insert(int x);
+	void make(int  s[] , int n);
+	void q_print(void);
+	int extract_min(void);
+	void heapsort(int *s,int n);
+	~p_queue(){
+		delete q;
+	}
+private:
+	int  parent(int n);
+	void bubble_up(int p);
+	void swap(int a , int b);
+	void bubble_down( int p);
+	int young_child(int n);
+	queue *q;
+};
+
+int  p_queue::parent(int n){
+	if (n==1)
+		return -1;
+	else
+		return n/2;
+}
+void p_queue::insert(int x){
+	if (p_queue::q->n >PQ_SIZE)
+		cout<<"Warning, prority queue overflow "<<endl;
+	else {
+		p_queue::q->n ++;
+		p_queue::q->q[p_queue::q->n] =x;
+		bubble_up(p_queue::q->n);
+	}
+}
+
+void p_queue::bubble_up(int p){
+	if (p_queue::parent(p) == -1)
+		return;
+	if(p_queue::q->q[p_queue::parent(p)]>p_queue::q->q[p]){
+		p_queue::swap(p, p_queue::parent(p));
+		bubble_up(p_queue::parent(p));
+	}
+}
+void p_queue::swap(int a , int b){
+	int aux = p_queue::q->q[a];
+	p_queue::q->q[a] = p_queue::q->q[b];
+	p_queue::q->q[b] = aux;
+}
+void p_queue::make(int  s[] , int n){
+	p_queue::q->n = 0;
+
+	for(int i =0; i<n; i++){
+		p_queue::insert(s[i]);
+	}
+}
+
+void p_queue::q_print(void){
+	for(int i =1; i<=p_queue::q->n; i++)
+		cout<<" "<<p_queue::q->q[i];
+	cout<<endl;
+}
+
+int p_queue::extract_min(void){
+	int min = -1;   /* Minumun value*/
+	if (q->n <=0)
+		cout<<"Warning: empty priority queue"<<endl;
+	else {
+
+		min = q->q[1];
+		q->q[1] = q->q[q->n];
+		q->n = q->n -1;
+		bubble_down(1);
+	}
+	cout<<min<<endl;
+	return min;
+}
+
+void p_queue::bubble_down(int p){
+
+	int c;
+	int min_index;
+	c = young_child(p);
+	min_index = p;
+	for(int i = 0;i<=1;i++)
+		if (((c+i)<= q->n))
+			if ((q->q[min_index] > q->q[c+i]))
+				min_index= c+i;
+	if (min_index!=p){
+		swap(p, min_index);
+		bubble_down(min_index);
+	}
+}
+void p_queue::heapsort(int s[],int n){
+	make(s,n);
+	for(int i=0;i<n;i++)
+		s[i] = extract_min();
+}
+int p_queue::young_child(int n){
+	return 2*n;
+}
 int main() {
 	srand(time(0));
 	graph g(50,false);
-	g.MonteCarlo(0.05,2,8);
+	g.MonteCarlo(0.2,2,8);
 	int *a;
 	a = new int[50];
 	g.print_graph();
 	a=g.dijkstra(0);
-	for (int i = 0; i <50;i++){
+	//for (int i = 0; i <50;i++){
+	//cout<<a[i]<<" ";
+	//}
+	cout<<endl;
+	cout <<endl;
+	p_queue Q;
+	Q.make(a+1,49);
+	cout<<"MIn is:"<<Q.extract_min()<<endl;
+	Q.q_print();
+	Q.heapsort(a,10);
+	for (int i = 0; i <10;i++){
 	cout<<a[i]<<" ";
 	}
+	cout<<endl;
 	cout<<endl;
 	delete[] a;
 	return 0;
