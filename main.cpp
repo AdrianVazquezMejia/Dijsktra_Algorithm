@@ -2,9 +2,32 @@
  * main.cpp
  *
  *  Created on: Apr 24, 2020
- *      Author: adrian-estelio
+ *      Author: AdrianVazquez
  */
+/*
+ *
+ MIT License
 
+Copyright (c) [2020] [Adrian Vazquez]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
 #include <iostream>
 #include <time.h>
 #include <limits.h>
@@ -31,6 +54,7 @@ typedef struct {
 	int nedges;
 	bool directed;
 }AdjancencyList;
+
 typedef struct {
 	int key;
 	int value;
@@ -51,15 +75,9 @@ void insert_edge(AdjancencyList *g ,int x, int y, int weight,bool directed){
 		insert_edge(g,y,x,weight,true);
 	}
 	else g->nedges++;
-	//cout<<"Edge inserted<< " <<x<<"<->"<<y<<" peso :"<< p ->weight<<endl;
 }
 
-int genCost(int initialCost,int  Range){
-	double aux = rand();
-	aux= aux/RAND_MAX *(Range -initialCost);
-	int result = initialCost+static_cast<int>(aux);
-	return result;
-}
+
 class p_queue{
 public:
 	p_queue(){
@@ -99,30 +117,51 @@ public:
 		for (i=0; i<n; i++)
 			List->edges[i] = NULL;
 		distance = new int[n];
+		prev = new int[n];
+		path = new int[n];
+		pathSize = 0;
 		cout<<"Class Constructed , empty matrix, size :"<<n<<endl;
+		hops = 0;
 	};
 	void init(int n = 0, bool directed = false);
 	void print_graph(void);
-	//	cout<<"se puede"<<endl;
-	//};
+	int  *getPath(int u, int w );
+	int getSize(int w);
 	void MonteCarlo(double density, int initialCost, int Range);
-	//void printt(void);
-	int *dijkstra(int start);
+	int *ShortestPath(int start);
+
+
+	~graph(){
+		release();
+		cout<<"Class Destructed"<<endl;
+	}
+
+private:
+	AdjancencyList *List;
+	int *distance;
+	int *path;
+	int pathSize;
+	int hops;
+	int *prev;
+
+	void find_path(int start, int end);
+	void putIn(int p);
+	int genCost(int initialCost,int  Range);
 	void release(void){
 		delete [] List->degree;
 		delete [] List->edges;
 		delete List;
 		delete [] distance;
+		delete [] prev ;
+		delete [] path;
 	}
-
-	~graph(){
-		cout<<"Class Destructed"<<endl;
-	}
-	int *distance;
-private:
-	AdjancencyList *List;
-
 };
+int graph::genCost(int initialCost,int  Range){
+	double aux = rand();
+	aux= aux/RAND_MAX *(Range -initialCost);
+	int result = initialCost+static_cast<int>(aux);
+	return result;
+}
 
 void graph::MonteCarlo(double density, int initialCost, int Range){
 	int weight=0;
@@ -147,7 +186,7 @@ void graph::print_graph( void ){
 	cout<<endl;
 	}
 }
-int *graph::dijkstra(int start){
+int *graph::ShortestPath(int start){
 	int i;
 	edgenode *p;
 	int v;
@@ -157,6 +196,7 @@ int *graph::dijkstra(int start){
 	distance= new int[List->nvertices];
 	for (i=0; i <List->nvertices;i++){
 		distance[i] = INT_MAX;
+		prev[i] = -1;
 	}
 	distance[start] =0;
 	v = start;
@@ -171,16 +211,32 @@ int *graph::dijkstra(int start){
 				if (distance[w] > (distance[v]+ weight)){
 					distance[w] = distance[v]+ weight;
 					Q.insert(w,distance[w]);
+					prev[w] =v;
 				}
 				p = p ->next;
 			}
 	}
+	for(i = 0; i < List->nvertices;i ++)
+		if(distance[i] ==INT_MAX)
+			distance[i] =-1;
 return distance;
 }
 
+void graph::find_path(int start, int end){
+	if ((start == end)||(end == -1)){
+		putIn(start);
+		cout<<endl;
+	}
+	else{
+		find_path(start,prev[end]);
+		putIn(end);
+	}
+}
 
-
-
+void graph::putIn(int p){
+	hops++;
+	path[hops] = p;
+}
 int  p_queue::parent(int n){
 	if (n==1)
 		return -1;
@@ -264,20 +320,50 @@ int p_queue::young_child(int n){
 int p_queue::size(void){
 	return q->n;
 }
-//xxx add generics to Queue
+
+
+int *graph::getPath(int u, int w){
+	hops =0;
+	find_path(u,w);
+	return path;
+}
+int graph::getSize(int w){
+	return distance[w];
+}
+
 int main() {
-	srand(time(0));
-	graph g(50,false);
-	g.MonteCarlo(0.2,2,1);
+	srand(time(0));  /* initialize some variables*/
+	int n = 50;		/* Graph size*/
 	int *a;
-	a = new int[50];
-	g.print_graph();
-	a=g.dijkstra(0);
-	for (int i = 0; i <50;i++){
+	double density =0.4;
+	int range =9;
+	a = new int[n];
+
+	graph g(n,false);       /* Initialize the graph */
+	g.MonteCarlo(density,1,range); /* Fill graph,( precision, start range, range) */
+	g.print_graph();        /*  Print graph in Adjacency List mode*/
+
+	a=g.ShortestPath(0);    /* Shortest path starting in 0*/
+	cout<<"Cost array: ";    /* Print cost array */
+	for (int i = 0; i <n;i++){
 	cout<<a[i]<<" ";
 	}
 	cout<<endl;
-	delete[] a;
+	/* Calculate average */
+	int len = 0;
+	int p = 0;
+	int count = 0;
+	for(int i = 0; i < n ; i++){
+		p = g.getSize(i);
+		if ( p>0){                 /*  Only count with are connected*/
+			len = p +len ;
+			count ++;
+		}
+	}
+	double promedio = static_cast<double>(len)/static_cast<double>(count);
+	cout<<"The average Cost is: "<<promedio<<endl;
+
+	delete [] a;
 	return 0;
 }
 
