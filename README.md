@@ -1,4 +1,7 @@
 # Dijsktra_Algorithm
+
+![](https://github.com/AdrianVazquezMejia/Dijsktra_Algorithm/workflows/C/badge.svg)
+
 Implementing a dijstra's 
 shortest path algorithm for a Monte Carlo simulation of a graph.
 Dijkstra’s algorithm is the basis for many route calculations and optimizations programs.
